@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Create Inventory{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">Back</a>
+<h2>Create Inventory</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST">
+        <label for="item_id">Item</label>
+        <select id="item_id" name="item_id" >
+            <option value="">Select Item</option>
+            {% for item in items %}
+                <option value="{{ item.id }}">
+                    {{ item.full_name }}
+                </option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="godown_id">Select Godown</label>
+        <select id="godown_id" name="godown_id"  onchange="updateRacks(this.value)">
+            <option value="">Select Godown</option>
+            {% for godown in godowns %}
+                <option value="{{ godown.id }}">{{ godown.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="rack_id">Select Rack</label>
+        <select id="rack_id" name="rack_id" >
+            <option value="">Select Rack</option>
+            {% for rack in racks %}
+                <option value="{{ rack.id }}" data-godown="{{ rack.godown_id }}">{{ rack.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="avl_qnty">Available Quantity</label>
+        <input type="number" id="avl_qnty" name="avl_qnty" >
+        <br>
+        <label for="min_qnty">Minimum Quantity</label>
+        <input type="number" id="min_qnty" name="min_qnty" >
+        <br>
+        <label for="rod_qnty">Rod Quantity</label>
+        <input type="number" id="rod_qnty" name="rod_qnty" >
+        <br>
+        <input type="submit" value="Create Inventory">
+    </form>
+{% endblock %}

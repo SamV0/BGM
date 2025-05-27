@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Create Rack{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.id) }}">Back</a>
+<h2>Add racks to <i>{{ godown.name }}</i></h2>
+{% endblock %}
+{% block content %}
+<form method="post" action="{{ url_for('main.inventory.godown.rack.rack_create.rack_create') }}">
+    <label for='num_racks'>Number of racks:</label>
+    <input type="number" id="num_racks" name="num_racks" >
+    <input type="hidden" id="godown_id" name="godown_id" value="{{ godown.id }}" >
+    <br>
+    <button type="submit">Add Racks</button>
+</form>
+{% endblock %}

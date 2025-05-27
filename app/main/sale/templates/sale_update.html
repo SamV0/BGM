@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Update Sales{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.sale.sale_read.sale_read') }}">Back</a>
+<h2>Update Sales</h2>
+{% endblock %}
+{% block content %}
+<form action="{{ url_for('main.sale.sale_update.sale_update', id=sale.id) }}" method="POST">
+    <label for="order_number">Order Number</label>
+    <input type="text" id="order_number" name="order_number" value="{{ sale.order_number }}" >
+    <br>
+    <label for="order_date">Order Date</label>
+    <input type="date" id="order_date" name="order_date" value="{{ sale.order_date.strftime('%Y-%m-%d') }}" >
+    <br>
+    <label for="customer_name">Customer Name</label>
+    <input type="text" id="customer_name" name="customer_name" value="{{ sale.customer_name }}" >
+    <br>
+    <label for="delivery_date">Delivery Date</label>
+    <input type="date" id="delivery_date" name="delivery_date" value="{{ sale.delivery_date.strftime('%Y-%m-%d') }}" >
+    <br>
+    <label for="status">Status</label>
+    <input type="text" id="status" name="status" value="{{ sale.status }}" >
+    <br>
+    <button type="submit">Update Sales</button>
+</form>

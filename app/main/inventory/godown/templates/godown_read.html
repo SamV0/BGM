@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Godowns{% endblock %}
+{% block header %}
+    <a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">Back</a>
+    <h2>Godowns</h2>
+    <a href="{{ url_for('main.inventory.godown.godown_create.godown_create') }}">Create Godown</a>
+{% endblock %}
+{% block content %}
+    {% for godown in godowns %}
+        <div class="card">
+            <h2>{{ godown.name }}</h2>
+            <details>
+                <summary>Details</summary>
+                <a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.id) }}" class="btn btn-info">View Racks</a>
+                <details>
+                    <summary>Actions</summary>
+                    <a href="{{ url_for('main.inventory.godown.godown_update.godown_update', id=godown.id) }}" class="btn btn-warning">Edit</a>
+                    <form action="{{ url_for('main.inventory.godown.godown_delete.godown_delete', godown_id=godown.id) }}" method="POST" style="border: none;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this godown?')">Delete</button>
+                    </form>
+                </details>
+            </details>
+        </div>
+    {% else %}
+        <p>No godowns found.</p>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,29 @@
+{# filepath: app/main/process/maker/templates/maker_create.html #}
+{% extends 'base.html' %}
+{% block title %}Add Maker{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.work.maker.maker_read.maker_read') }}">Back</a>
+<h2>Add Maker</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.work.maker.maker_create.maker_create') }}">
+        <label>Name</label>
+        <br><input type="text" name="name"  autocomplete="off">
+
+        <br><br><label>Address</label>
+        <br><input type="text" name="address" >
+
+        <br><br><label>Phone</label>
+        <br><input type="text" name="phone"  
+                   pattern="[0-9]{10}" title="Phone number should be 10 digits">
+
+        <br><br><label>Alternate Phone</label>
+        <br><input type="text" name="alt_phone" 
+                   pattern="[0-9]{10}" title="Phone number should be 10 digits">
+
+        <br><br><label>Remarks</label>
+        <br><textarea name="remarks" rows="3"></textarea>
+
+        <br><br><button type="submit">Create Maker</button>
+    </form>
+{% endblock %}

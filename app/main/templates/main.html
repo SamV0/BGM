@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Main{% endblock %}
+{% block header %}
+<h2>Main</h2>
+<button id="theme-toggle" class="theme-toggle">☀️</button>
+{% endblock %}
+{% block content %}
+    <a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">Inventory</a>
+    <a href="{{ url_for('main.purchase.purchase_read.purchase_read') }}">Purchase</a>
+    <a href="{{ url_for('main.sale.sale_read.sale_read') }}">Sale</a>
+    <a href="{{ url_for('main.work.work_read.work_read') }}">Work in Progress</a>
+{% endblock %}

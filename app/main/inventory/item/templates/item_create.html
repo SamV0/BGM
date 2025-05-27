@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Add Item{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.item.item_read.item_read') }}">Back</a><br>
+<h2>Add Item</h2>
+{% endblock %}
+{% block content %}
+<form method="POST" action="{{ url_for('main.inventory.item.item_create.item_create') }}">
+    <label for="name" width="100%">Name:</label>
+    <input type="text" id="name" name="name"  autocomplete="off">
+    <br>
+    <label for="width_m">Width (m):</label>
+    <input type="number" id="width_m" name="width_m" step="0.01" >
+    <br>
+    <label for="width_G">Width (G):</label>
+    <input type="number" id="width_G" name="width_G" step="0.01" >
+    <br>
+    <label for="length_in">Length (in):</label>
+    <input type="number" id="length_in" name="length_in" step="0.01" >
+    <br>
+    <label for="breadth_soot">Breadth (soot):</label>
+    <input type="number" id="breadth_soot" name="breadth_soot" step="0.01" >
+    <br>
+    <label for="weight_gm">Weight (gm):</label>
+    <input type="number" id="weight_gm" name="weight_gm" step="0.01" >
+    <br>
+    <label for="weight_kg">Weight (kg):</label>
+    <input type="number" id="weight_kg" name="weight_kg" step="0.01" >
+    <br>
+    <input type="submit" value="Add Item">
+</form>
+{% endblock %}

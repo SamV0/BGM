@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Create Sales{% endblock %}
+{% block header %}
+    <a href="{{ url_for('main.sale.sale_read.sale_read')}}">Back</a>
+    <h2>Create Sales</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.sale.sale_create.sale_create') }}">
+        <label for="order_number">Order Number</label>
+        <input type="text" id="order_number" name="order_number" >
+        <br>
+        <label for="order_date">Order Date</label>
+        <input type="date" id="order_date" name="order_date" >
+        <br>
+        <label for="customer_name">Customer Name</label>
+        <select id="customer_id" name="customer_id" 
+            <option value="">Select Customer</option>
+            {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="delivery_date">Delivery Date</label>
+        <input type="date" id="delivery_date" name="delivery_date" >
+        <br>
+        <label for="status">Status</label>
+        <input type="text" id="status" name="status" >
+        <br>
+        <button type="submit">Create Sales</button>
+    </form>
+{% endblock %}

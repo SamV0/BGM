@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Items{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">Back</a>
+<h2>Items</h2>
+<a href="{{ url_for('main.inventory.item.item_create.item_create') }}">Create item</a>
+{% endblock %}
+{% block content %}
+    {% for item in items %}
+        <div class="card">
+            <h2>{{ item.full_name }}</h2>
+            <details>
+                <summary>Details</summary>
+                {% if item.width_m != 0 %}
+                <p>Width (m) - {{ item.width_m }}</p>
+                {% endif %}
+                {% if item.width_G != 0 %}
+                <p>Width (G) - {{ item.width_G }}</p>
+                {% endif %}
+                {% if item.length_in != 0 %}
+                <p>Length (in) - {{ item.length_in }}</p>
+                {% endif %}
+                {% if item.breadth_soot != 0 %}
+                <p>Breadth (soot) - {{ item.breadth_soot }}</p>
+                {% endif %}
+                {% if item.weight_gm != 0 %}
+                <p>Weight (gm) - {{ item.weight_gm }}</p>
+                {% endif %}
+                {% if item.weight_kg != 0 %}
+                <p>Weight (kg) - {{ item.weight_kg }}</p>
+                {% endif %}
+                <details>
+                    <summary>Actions</summary>
+                    <a href="{{ url_for('main.inventory.item.item_update.item_update', id=item.id) }}">Edit</a>
+                    <form method="POST" action="{{ url_for('main.inventory.item.item_delete.item_delete', id=item.id) }}" style="border:none;">
+                        <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
+                    </form>
+                </details>
+            </details>
+        </div>
+    {% else %}
+    <p>No items found.</p>
+    {% endfor %}
+{% endblock %}

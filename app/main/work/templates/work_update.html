@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Update Work in Progress{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.work.work_read.work_read') }}">Back</a>
+<h2>Update Work in Progress</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.work.work_update.work_update', work_id=work.id) }}">
+        <label>Sales Order</label>
+        <br><select name="sales_order_id" >
+            <option value="">Select Sales Order</option>
+            {% for order in sales_orders %}
+            <option value="{{ order.id }}" {% if order.id == work.sales_order_id %}selected{% endif %}>
+                {{ order.order_number }} - {{ order.customer_name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Maker</label>
+        <br><select name="maker_id" >
+            <option value="">Select Maker</option>
+            {% for maker in makers %}
+            <option value="{{ maker.id }}" {% if maker.id == work.maker_id %}selected{% endif %}>
+                {{ maker.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Process</label>
+        <br><select name="process_id" >
+            <option value="">Select Process</option>
+            {% for process in processes %}
+            <option value="{{ process.id }}" {% if process.id == work.process_id %}selected{% endif %}>
+                {{ process.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Assigned Date</label>
+        <br><input type="date" name="assigned_date" value="{{ work.assigned_date.strftime('%Y-%m-%d') }}" >
+
+        <br><br><label>Assigned Quantity</label>
+        <br><input type="number" name="assigned_quantity" step="0.01" value="{{ work.assigned_quantity }}" >
+
+        <br><br><label>Assigned Item</label>
+        <br><select name="assigned_items" >
+            <option value="">Select Item</option>
+            {% for item in items %}
+            <option value="{{ item.id }}" {% if item.id == work.assigned_items %}selected{% endif %}>
+                {{ item.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Work To Do</label>
+        <br><input type="number" name="work_to_do" value="{{ work.work_to_do }}" >
+
+        <br><br><label>Received Date</label>
+        <br><input type="date" name="received_date" value="{% if work.received_date %}{{ work.received_date.strftime('%Y-%m-%d') }}{% endif %}">
+
+        <br><br><label>Received Quantity</label>
+        <br><input type="number" name="received_quantity" step="0.01" value="{{ work.received_quantity or '' }}">
+
+        <br><br><label>Received Item</label>
+        <br><select name="received_items">
+            <option value="">Select Item</option>
+            {% for item in items %}
+            <option value="{{ item.id }}" {% if item.id == work.received_items %}selected{% endif %}>
+                {{ item.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Work Done</label>
+        <br><input type="number" name="work_done" value="{{ work.work_done or '' }}">
+
+        <br><br><label>Status</label>
+        <br><select name="status" >
+            <option value="assigned" {% if work.status == 'assigned' %}selected{% endif %}>Assigned</option>
+            <option value="in_progress" {% if work.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="completed" {% if work.status == 'completed' %}selected{% endif %}>Completed</option>
+        </select>
+
+        <br><br><label>Remarks</label>
+        <br><textarea name="remarks" rows="3">{{ work.remarks or '' }}</textarea>
+
+        <br><br><button type="submit">Update work</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Create Godown{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">Back</a>
+<h2>Create Godown</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.inventory.godown.godown_create.godown_create') }}">
+        <label for="name">Godown name</label>
+        <input type="text" id="name" name="name"  autocomplete="off">
+        <br>
+        <label for='num_racks'>Number of racks</label>
+        <input type="number" id="num_racks" name="num_racks" >
+        <br>
+        <button type="submit">Create Godown</button>
+    </form>
+{% endblock %}

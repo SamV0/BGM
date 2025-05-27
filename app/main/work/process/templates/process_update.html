@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Update Process{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.work.process.process_read.process_read') }}">Back</a>
+<h2>Update Process</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.work.process.process_update.process_update', id=process.id) }}">
+        <label>Name</label>
+        <br><input type="text" name="name" value="{{ process.name }}"  autocomplete="off">
+
+        <br><br><label>Description</label>
+        <br><textarea name="description" rows="3">{{ process.description or '' }}</textarea>
+
+        <br><br><label>Duration (days)</label>
+        <br><input type="number" name="duration_in_days" value="{{ process.duration_in_days }}"  min="1">
+
+        <br><br><label>Cost (INR)</label>
+        <br><input type="number" name="cost_in_inr" value="{{ "%.2f"|format(process.cost_in_inr) }}"  min="0" step="0.01">
+
+        <br><br><label>Item</label>
+        <br><select name="item_id" >
+            <option value="">Select Item</option>
+            {% for item in items %}
+            <option value="{{ item.id }}" {% if item.id == process.item_id %}selected{% endif %}>
+                {{ item.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Maker</label>
+        <br><select name="maker_id" >
+            <option value="">Select Maker</option>
+            {% for maker in makers %}
+            <option value="{{ maker.id }}" {% if maker.id == process.maker_id %}selected{% endif %}>
+                {{ maker.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br><label>Status</label>
+        <br><input type="checkbox" name="is_active" {% if process.is_active %}checked{% endif %}> Active
+
+        <br><br><button type="submit">Update Process</button>
+    </form>
+{% endblock %}

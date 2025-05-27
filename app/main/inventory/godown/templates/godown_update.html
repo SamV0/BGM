@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Update Godown{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">Back</a>
+<h2>Update Godown</h2>
+{% endblock %}
+{% block content %}
+<form method="POST" action="{{ url_for('main.inventory.godown.godown_update.godown_update', id=godown.id) }}">
+    <label>Name</label>
+    <input type="text" name="name" value="{{ godown.name }}"  autocomplete="off">
+    <br>
+    <button type="submit">Update Godown</button>
+</form>
+{% endblock %}

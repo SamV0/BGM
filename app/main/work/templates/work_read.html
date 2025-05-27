@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Work in Progress{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.main') }}">Back</a>
+<h2>Work in Progress</h2>
+<a href="{{ url_for('main.work.work_create.work_create') }}">Add Work in Progress</a>
+<a href="{{url_for('main.work.maker.maker_read.maker_read')}}">Makers</a>
+<a href="{{url_for('main.work.process.process_read.process_read')}}">Processes</a>
+{% endblock %}
+{% block content %}
+    {% for work in works %}
+        <div class="card">
+            <p><b>Sales Order:</b><br>{{ work.sales_order.order_number }} - {{ work.sales_order.customer_name }}</p>
+            <p><b>Maker:</b><br>{{ work.maker.name }}</p>
+            <p><b>Process:</b><br>{{ work.process.name }}</p>
+            <p><b>Assigned Date:</b><br>{{ work.assigned_date.strftime('%Y-%m-%d') }}</p>
+            <p><b>Assigned Quantity:</b><br>{{ "%.2f"|format(work.assigned_quantity) }}</p>
+            <p><b>Assigned Item:</b><br>{{ work.assigned_item.name }}</p>
+            <p><b>Work To Do:</b><br>{{ work.work_to_do }}</p>
+            
+            {% if work.received_date %}
+            <p><b>Received Date:</b><br>{{ work.received_date.strftime('%Y-%m-%d') }}</p>
+            {% endif %}
+            
+            {% if work.received_quantity %}
+            <p><b>Received Quantity:</b><br>{{ "%.2f"|format(work.received_quantity) }}</p>
+            {% endif %}
+            
+            {% if work.received_items %}
+            <p><b>Received Item:</b><br>{{ work.received_item.name }}</p>
+            {% endif %}
+            
+            {% if work.work_done %}
+            <p><b>Work Done:</b><br>{{ work.work_done }}</p>
+            {% endif %}
+            
+            <p><b>Status:</b><br>{{ work.status }}</p>
+            
+            {% if work.remarks %}
+            <p><b>Remarks:</b><br>{{ work.remarks }}</p>
+            {% endif %}
+            
+            <a href="{{ url_for('main.work.work_update.work_update', work_id=work.id) }}">Edit</a>
+            <form method="POST" action="{{ url_for('main.work.work_delete.work_delete', work_id=work.id) }}" style="border: none;">
+                <button type="submit" onclick="return confirm('Are you sure?');">Delete</button>
+            </form>
+        </div>
+    {% else %}
+        <p>No work in progress found.</p>
+    {% endfor %}
+{% endblock %}

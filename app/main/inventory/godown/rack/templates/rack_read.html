@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Racks{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">Back</a>
+    <h2>Racks of <i>{{ godown.name }}</i></h2>
+    <a href="{{ url_for('main.inventory.godown.rack.rack_create.rack_create', godown_id=godown.id) }}">Add Racks</a>
+{% endblock %}
+{% block content %}
+{% for rack in racks %}
+    <div class="card">{{ rack.name }}</div>
+{% endfor %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_delete.rack_delete', godown_id=godown.id) }}">Delete Racks</a>
+{% endblock %}

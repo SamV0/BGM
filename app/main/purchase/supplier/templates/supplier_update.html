@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Update Supplier{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.purchase.supplier.supplier_read.supplier_read') }}">Back</a>
+<h2>Update Supplier</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.purchase.supplier.supplier_update.supplier_update', id=supplier.id) }}">
+        <label>Name</label>
+        <br><input type="text" name="name" value="{{ supplier.name }}"  autocomplete="off">
+
+        <br><br><label>Address</label>
+        <br><input type="text" name="address" value="{{ supplier.address }}" >
+
+        <br><br><label>Phone</label>
+        <br><input type="text" name="phone" value="{{ supplier.phone }}"  
+                   pattern="[0-9]{10}" title="Phone number should be 10 digits">
+
+        <br><br><label>Alternate Phone</label>
+        <br><input type="text" name="alt_phone" value="{{ supplier.alt_phone if supplier.alt_phone }}"
+                   pattern="[0-9]{10}" title="Phone number should be 10 digits">
+
+        <br><br><label>Status</label>
+        <br><input type="checkbox" name="is_active" {% if supplier.is_active %}checked{% endif %}> Active
+
+        <br><br><label>Remarks</label>
+        <br><textarea name="remarks" rows="3">{{ supplier.remarks if supplier.remarks }}</textarea>
+
+        <br><br><button type="submit">Update Supplier</button>
+    </form>
+{% endblock %}

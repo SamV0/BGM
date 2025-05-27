@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Update Maker{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.work.maker.maker_read.maker_read') }}">Back</a>
+<h2>Update Maker</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.work.maker.maker_update.maker_update', maker_id=maker.id) }}">
+        <label>Name</label>
+        <br><input type="text" name="name" value="{{ maker.name }}"  autocomplete="off">
+
+        <br><br><label>Address</label>
+        <br><input type="text" name="address" value="{{ maker.address }}" >
+
+        <br><br><label>Phone</label>
+        <br><input type="text" name="phone" value="{{ maker.phone }}" 
+                   pattern="[0-9]{10}" title="Phone number should be 10 digits">
+
+        <br><br><label>Alternate Phone</label>
+        <br><input type="text" name="alt_phone" value="{{ maker.alt_phone or '' }}"
+                   pattern="[0-9]{10}" title="Phone number should be 10 digits">
+
+        <br><br><label>Status</label>
+        <br><input type="checkbox" name="is_active" {% if maker.is_active %}checked{% endif %}> Active
+
+        <br><br><label>Remarks</label>
+        <br><textarea name="remarks" rows="3">{{ maker.remarks or '' }}</textarea>
+
+        <br><br><button type="submit">Update Maker</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Makers{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.work.work_read.work_read') }}">Back</a>
+<h2>Makers</h2>
+<a href="{{ url_for('main.work.maker.maker_create.maker_create') }}">Add Maker</a>
+{% endblock %}
+{% block content %}
+    {% for maker in makers %}
+        <div class="card">
+            <p><b>Name:</b><br>{{ maker.name }}</p>
+            <p><b>Address:</b><br>{{ maker.address }}</p>
+            <p><b>Phone:</b><br>{{ maker.phone }}</p>
+            {% if maker.alt_phone %}
+            <p><b>Alternative Phone:</b><br>{{ maker.alt_phone }}</p>
+            {% endif %}
+            <p><b>Status:</b><br>{{ "Active" if maker.is_active else "Inactive" }}</p>
+            {% if maker.remarks %}
+            <p><b>Remarks:</b><br>{{ maker.remarks }}</p>
+            {% endif %}
+            
+            <a href="{{ url_for('main.work.maker.maker_update.maker_update', maker_id=maker.id) }}">Edit</a>
+            <form method="POST" action="{{ url_for('main.work.maker.maker_delete.maker_delete', maker_id=maker.id) }}" style="border: none;">
+                <button type="submit" onclick="return confirm('Are you sure?');">Delete</button>
+            </form>
+        </div>
+    {% else %}
+        <p>No makers found.</p>
+    {% endfor %}
+{% endblock %}

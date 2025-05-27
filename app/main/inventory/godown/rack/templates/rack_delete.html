@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Delete Racks{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.id) }}">Back</a>
+<h2>Delete Racks from {{ godown.name }}</h2>
+{% endblock %}
+{% block content %}
+<form method="post" action="{{ url_for('main.inventory.godown.rack.rack_delete.rack_delete', godown_id=godown.id) }}">
+    <label for='num_racks_to_delete'>Number of racks to delete (from last)</label>
+    <input type="number" id="num_racks_to_delete" name="num_racks_to_delete" >
+    <input type="hidden" id="godown_id" name="godown_id" value="{{ godown.id }}" >
+    <br>
+    <input type="submit" value="Delete">
+</form>
+{% endblock %}

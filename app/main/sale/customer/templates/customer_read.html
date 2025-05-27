@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.sale.sale_read.sale_read')}}">⬅</a>
+<h2>Customers</h2>
+<a href="{{ url_for('main.sale.customer.customer_create.customer_create') }}">➕</a>
+{% endblock %}
+{% block content %}
+{% for customer in customers %}
+<div class="card">
+    <h2>{{ customer.name }}</h2>
+    <p>Address: {{ customer.address }}</p>
+    <p>Phone: {{ customer.phone }}</p>
+    {% if customer.alt_phone != 0 %}
+    <p>Alt. Phone: {{ customer.alt_phone }}</p>
+    {% endif %}
+    <a href="{{ url_for('main.sale.customer.customer_update.customer_update', id=customer.id) }}">Update</a>
+    <a href="{{ url_for('main.sale.customer.customer_delete.customer_delete', id=customer.id) }}">Delete</a>
+{% else %}
+    <p>No customers found</p>
+</div>
+{% endfor %}
+{% endblock %}
