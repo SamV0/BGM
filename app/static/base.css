@@ -11,13 +11,14 @@ a:hover {
 }
 body {
   align-items: center;
+  justify-content: center;
   background-color: black;
   border: 1px solid gray;
-  color: white;
+  color: gray;
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  margin: 0;
+  margin: 5px;
   padding: 5px;
 }
 button {
@@ -61,6 +62,7 @@ header{
   justify-content: space-between;
   margin: 5px;
   padding: 5px;
+  width: calc(100% - 20px);
 }
 h2 {
   margin: 0;
@@ -81,14 +83,11 @@ form {
   padding: 5px;
 }
 input {
-  background-color: silver;
-  color: black;
-  border: 1px solid gray;
   margin: 5px;
   padding: 5px;
 }
 input:hover {
-  border-color: black;
+  border-color: gold;
 }
 label {
   margin: 5px;
@@ -112,19 +111,9 @@ p {
   padding: 5px;
 }
 select {
-  background-color: gray;
-  border: 1px solid gray;
-  color: black;
   margin: 5px;
   padding: 5px;
-  width: calc(100% - 10px);
 }
 select:hover {
-  border-color: silver;
-}
-select option:hover {
-  background-color: black;
-  color: white;
-  padding: 5px;
-  margin: 5px;
+  border: 1px solid grey;
 }

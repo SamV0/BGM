@@ -69,7 +69,7 @@
         <button type="submit" {% if purchase.status != 'draft' and not purchase.status == 'ordered' %}disabled{% endif %}>
             Update Purchase Order
         </button>
-        <a href="{{ url_for('main.purchase.purchase_read.purchase_read') }}">Back</a>
+        <a href="{{ url_for('main.purchase.purchase_read.purchase_read') }}">&xlArr;</a>
     </form>
 </div>
 {% endblock %}

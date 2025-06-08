@@ -16,14 +16,21 @@ class Item(BaseModel):
     
     def generate_full_name(self):
         """Generates and updates the full_name field including only non-zero measurements"""
-        measurements = []
-        if float(self.width_m) > 0:
-            measurements.append(f"{self.width_m}m")
-        if float(self.width_G) > 0:
-            measurements.append(f"{self.width_G}G")
-        if float(self.length_in) > 0:
-            measurements.append(f"{self.length_in}in")
-        if float(self.breadth_soot) > 0:
-            measurements.append(f"{self.breadth_soot}soot")
-            
-        self.full_name = f"{self.name} {' '.join(measurements)}" if measurements else self.name
+        measurements = {
+            'width_m': 'm',
+            'width_G': 'G',
+            'length_in': 'in',
+            'breadth_soot': 'soot'
+        }
+        
+        def safe_float(value):
+            """Convert value to float safely, return 0 if value is None or empty string"""
+            if value is None or value == '':
+                return 0
+            return float(value)
+        
+        parts = [f"{getattr(self, attr)}{unit}" 
+                for attr, unit in measurements.items() 
+                if safe_float(getattr(self, attr)) > 0]
+        
+        self.full_name = f"{self.name} {' '.join(parts)}" if parts else self.name

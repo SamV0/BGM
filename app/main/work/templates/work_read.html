@@ -1,11 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Work in Progress{% endblock %}
+{% block title %}WIP{% endblock %}
 {% block header %}
-<a href="{{ url_for('main.main') }}">Back</a>
-<h2>Work in Progress</h2>
-<a href="{{ url_for('main.work.work_create.work_create') }}">Add Work in Progress</a>
-<a href="{{url_for('main.work.maker.maker_read.maker_read')}}">Makers</a>
-<a href="{{url_for('main.work.process.process_read.process_read')}}">Processes</a>
+<a href="{{ url_for('main.main') }}">&xlArr;</a>
+<h2>WIP</h2>
+<a href="{{ url_for('main.work.work_create.work_create') }}">➕Add WIP</a>
+<details>
+    <summary>More</summary>
+    <p>
+        <a href="{{url_for('main.work.maker.maker_read.maker_read')}}">Makers</a>
+        <a href="{{url_for('main.work.process.process_read.process_read')}}">Processes</a>
+    </p>
+</details>
 {% endblock %}
 {% block content %}
     {% for work in works %}

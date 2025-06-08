@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Update Inventory{% endblock %}
 {% block header %}
-<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">Back</a>
+<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
 <h2>Update Inventory</h2>
 {% endblock %}
 {% block content %}
@@ -11,7 +11,7 @@
         <option value="">Select Item</option>
         {% for item in items %}
         <option value="{{ item.id }}" {% if item.id == inventory.item_id %}selected{% endif %}>
-            {{ item.name }}
+            {{ item.full_name }}
         </option>
         {% endfor %}
     </select>
@@ -28,15 +28,13 @@
 
     <label for="rack_id">Rack</label>
     <select id="rack_id" name="rack_id" >
-        <option value="">Select Godown First</option>
-        {% for rack in racks %}
-        <option value="{{ rack.id }}" 
-                data-godown="{{ rack.godown_id }}"
-                {% if rack.id == inventory.rack_id %}selected{% endif %}
-                {% if rack.godown_id != inventory.godown_id %}hidden{% endif %}>
-            {{ rack.name }}
-        </option>
-        {% endfor %}
+        <option value="">Select Rack</option>
+    {% for rack in racks %}
+    <option value="{{ rack.id }}" 
+        {% if rack.id == inventory.godown_id.rack_id %}selected{% endif %}>
+        {{ rack.name }}
+    </option>
+    {% endfor %}
     </select>
 
     <label for="avl_qnty">Available Quantity</label>
