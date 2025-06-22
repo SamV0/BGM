@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Create BOM{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.bom.bom_read.bom_read') }}">&xlArr;</a>
+<h2>Create BOM</h2>
+{% endblock %}
+{% block content %}
+<form method="post">
+    <label for="item_id">Item ID</label>
+    <input type="text" name="item_id" id="item_id" >
+    <br>
+    <label for="material_id">Material ID</label>
+    <input type="text" name="material_id" id="material_id" >
+    <br>
+    <label for="quantity">Quantity</label>
+    <input type="text" name="quantity" id="quantity" >
+    <br>
+    <button type="submit">Create BOM</button>
+</form>
+{% endblock %}

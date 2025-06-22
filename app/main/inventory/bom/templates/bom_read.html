@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}BOM{% endblock %}
+{% block header %}
+    <a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
+    <h2>BOM</h2>
+    <a href="{{ url_for('main.inventory.bom.bom_create.bom_create') }}">Create BOM</a>
+{% endblock %}
+{% block content %}
+    <table>
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Material ID</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bom in boms %}
+            <tr>
+                <td>{{ bom.item_id }}</td>
+                <td>{{ bom.material_id }}</td>
+                <td>{{ bom.quantity }}</td>
+                <td>
+                    <a href="{{ url_for('main.inventory.bom.bom_update.bom_update', id=bom.id) }}">Update</a>
+                    <a href="{{ url_for('main.inventory.bom.bom_delete.bom_delete', id=bom.id) }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

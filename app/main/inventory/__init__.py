@@ -18,5 +18,5 @@ inventory_bp.register_blueprint(item_bp)
 from .godown import godown_bp
 inventory_bp.register_blueprint(godown_bp)
 
-from .assemble import bom_bp
+from .bom import bom_bp
 inventory_bp.register_blueprint(bom_bp)

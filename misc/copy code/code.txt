@@ -1,0 +1,1149 @@
+#BGM\BGM\app\main\inventory\inventory_create.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from app.main.inventory.models import Inventory
+from app.main.inventory.item.models import Item
+from app.main.inventory.godown.models import Godown
+from app.main.inventory.godown.rack.models import Rack
+
+inventory_create_bp = Blueprint('inventory_create', __name__, template_folder='templates')
+
+@inventory_create_bp.route('/create', methods=['GET', 'POST'])
+def inventory_create():
+    if request.method == 'POST':
+        item_id = request.form['item_id']
+        godown_id = request.form['godown_id']
+        rack_id = request.form['rack_id']
+        avl_qnty = request.form['avl_qnty']
+        min_qnty = request.form['min_qnty']
+        rod_qnty = request.form['rod_qnty']
+
+        new_inventory = Inventory(item_id=item_id, godown_id=godown_id, rack_id=rack_id, avl_qnty=avl_qnty, min_qnty=min_qnty, rod_qnty=rod_qnty)
+        db.session.add(new_inventory)
+        db.session.commit()
+        flash('Inventory created successfully.', 'success')
+        return redirect(url_for('main.inventory.inventory_read.inventory_read'))
+
+    items = Item.query.all()
+    godowns = Godown.query.all()
+    racks = Rack.query.all()
+    return render_template('inventory_create.html', items=items, godowns=godowns, racks=racks)
+
+#BGM\BGM\app\main\inventory\inventory_delete.py
+from flask import Blueprint, redirect, url_for, flash
+from app import db
+from .models import Inventory
+
+inventory_delete_bp = Blueprint('inventory_delete', __name__, url_prefix='/inventory')
+
+@inventory_delete_bp.route('/delete/<int:id>', methods=['POST'])
+def inventory_delete(id):
+    inventory = Inventory.query.get_or_404(id)
+    try:
+        db.session.delete(inventory)
+        db.session.commit()
+        flash(' deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting inventory record: {str(e)}', 'danger')
+    
+    return redirect(url_for('main.inventory.inventory_read.inventory_read'))
+
+#BGM\BGM\app\main\inventory\inventory_read.py
+from flask import Blueprint, render_template
+from app import db
+from .models import Inventory
+
+inventory_read_bp = Blueprint('inventory_read', __name__, url_prefix='/inventory', template_folder='templates')
+
+@inventory_read_bp.route('/read')
+def inventory_read():
+    inventories = Inventory.query.all()
+    return render_template('inventory_read.html', inventories=inventories)
+
+#BGM\BGM\app\main\inventory\inventory_update.py
+from flask import Blueprint, render_template, request, redirect, url_for
+from app import db
+from .models import Inventory
+from ..inventory.item.models import Item
+from ..inventory.godown.models import Godown
+from ..inventory.godown.rack.models import Rack
+
+inventory_update_bp = Blueprint('inventory_update', __name__, url_prefix='/inventory')
+
+@inventory_update_bp.route('/update/<int:id>', methods=['GET', 'POST'])
+def inventory_update(id):
+    inventory = Inventory.query.get_or_404(id)
+    if request.method == 'POST':
+        inventory.item_id = request.form['item_id']
+        inventory.godown_id = request.form['godown_id']
+        inventory.rack_id = request.form['rack_id']
+        inventory.avl_qnty = request.form['avl_qnty']
+        inventory.min_qnty = request.form['min_qnty']
+        inventory.rod_qnty = request.form['rod_qnty']
+        db.session.commit()
+        return redirect(url_for('main.inventory.inventory_read.inventory_read'))
+    
+    items = Item.query.all()
+    godowns = Godown.query.all()
+    racks = Rack.query.all()
+    
+    return render_template('inventory_update.html', 
+                         inventory=inventory,
+                         items=items,
+                         godowns=godowns,
+                         racks=racks)
+
+#BGM\BGM\app\main\inventory\models.py
+from app import db
+
+class Inventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)
+    item = db.relationship('Item', backref=db.backref('inventories', lazy=True))
+    godown_id = db.Column(db.Integer, db.ForeignKey('godowns.id'), nullable=True)
+    godown = db.relationship('Godown', backref=db.backref('inventories', lazy=True))
+    rack_id = db.Column(db.Integer, db.ForeignKey('racks.id'), nullable=True)
+    rack = db.relationship('Rack', backref=db.backref('inventories', lazy=True))
+    avl_qnty = db.Column(db.Integer, nullable=True)
+    min_qnty = db.Column(db.Integer, nullable=True)
+    rod_qnty = db.Column(db.Integer, nullable=True)
+#BGM\BGM\app\main\inventory\__init__.py
+from flask import Blueprint
+
+inventory_bp = Blueprint('inventory', __name__, url_prefix='/inventory')
+
+from .inventory_create import inventory_create_bp
+from .inventory_read import inventory_read_bp
+from .inventory_update import inventory_update_bp
+from .inventory_delete import inventory_delete_bp
+
+inventory_bp.register_blueprint(inventory_create_bp)
+inventory_bp.register_blueprint(inventory_read_bp)
+inventory_bp.register_blueprint(inventory_update_bp)
+inventory_bp.register_blueprint(inventory_delete_bp)
+
+from .item import item_bp
+inventory_bp.register_blueprint(item_bp)
+
+from .godown import godown_bp
+inventory_bp.register_blueprint(godown_bp)
+
+from .bom import bom_bp
+inventory_bp.register_blueprint(bom_bp)
+
+#BGM\BGM\app\main\inventory\bom\bom_create.py
+from flask import Blueprint, render_template, request, redirect, url_for
+from app import db
+from .models import Bom
+
+bom_create_bp = Blueprint('bom_create', __name__, template_folder='templates')
+
+@bom_create_bp.route('/bom_create', methods=['GET', 'POST'])
+def bom_create():
+    if request.method == 'POST':
+        item_id = request.form['item_id']
+        material_id = request.form['material_id']
+        quantity = request.form['quantity']
+
+        new_bom = Bom(item_id=item_id, material_id=material_id, quantity=quantity)
+        db.session.add(new_bom)
+        db.session.commit()
+        return redirect(url_for('main.inventory.bom.bom_read.bom_read'))
+    return render_template('bom_create.html')
+
+#BGM\BGM\app\main\inventory\bom\bom_delete.py
+from flask import Blueprint, redirect, url_for
+from app import db
+from .models import Bom
+
+bom_delete_bp = Blueprint('bom_delete', __name__, template_folder='templates')
+
+@bom_delete_bp.route('/delete/<int:id>')
+def bom_delete(id):
+    bom = Bom.query.get_or_404(id)
+    db.session.delete(bom)
+    db.session.commit()
+    return redirect(url_for('main.inventory.bom.bom_read.bom_read'))
+
+#BGM\BGM\app\main\inventory\bom\bom_read.py
+from flask import Blueprint, render_template
+from app import db
+from .models import Bom
+
+bom_read_bp = Blueprint('bom_read', __name__, template_folder='templates')
+
+@bom_read_bp.route('/read')
+def bom_read():
+    boms = Bom.query.all()
+    return render_template('bom_read.html', boms=boms)
+
+#BGM\BGM\app\main\inventory\bom\bom_update.py
+from flask import Blueprint, render_template, request, redirect, url_for
+from app import db
+from .models import Bom
+
+bom_update_bp = Blueprint('bom_update', __name__, template_folder='templates')
+
+@bom_update_bp.route('/update/<int:id>', methods=['GET', 'POST'])
+def bom_update(id):
+    bom = Bom.query.get_or_404(id)
+    if request.method == 'POST':
+        bom.item_id = request.form['item_id']
+        bom.material_id = request.form['material_id']
+        bom.quantity = request.form['quantity']
+        db.session.commit()
+        return redirect(url_for('main.inventory.bom.bom_read.bom_read'))
+    return render_template('bom_update.html', bom=bom)
+
+#BGM\BGM\app\main\inventory\bom\models.py
+from app import db
+
+class Bom(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)
+    
+    # Specify foreign_keys for both relationships to resolve ambiguity
+    item = db.relationship('Item', foreign_keys=[item_id], backref=db.backref('boms', lazy=True))
+    material = db.relationship('Item', foreign_keys=[material_id], backref=db.backref('material_for_boms', lazy=True))
+    quantity = db.Column(db.Integer, nullable=True)
+
+    def __repr__(self):
+        return f"<Bom item_id={self.item_id} material_id={self.material_id}>"
+
+#BGM\BGM\app\main\inventory\bom\__init__.py
+from flask import Blueprint
+
+bom_bp = Blueprint('bom', __name__)
+
+from .bom_create import bom_create_bp
+from .bom_read import bom_read_bp
+from .bom_update import bom_update_bp
+from .bom_delete import bom_delete_bp
+
+bom_bp.register_blueprint(bom_create_bp)
+bom_bp.register_blueprint(bom_read_bp)
+bom_bp.register_blueprint(bom_update_bp)
+bom_bp.register_blueprint(bom_delete_bp)
+#BGM\BGM\app\main\inventory\bom\templates\bom_create.html
+{% extends 'base.html' %}
+{% block title %}Create BOM{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.bom.bom_read.bom_read') }}">&xlArr;</a>
+<h2>Create BOM</h2>
+{% endblock %}
+{% block content %}
+<form method="post">
+    <label for="item_id">Item ID</label>
+    <input type="text" name="item_id" id="item_id" >
+    <br>
+    <label for="material_id">Material ID</label>
+    <input type="text" name="material_id" id="material_id" >
+    <br>
+    <label for="quantity">Quantity</label>
+    <input type="text" name="quantity" id="quantity" >
+    <br>
+    <button type="submit">Create BOM</button>
+</form>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\bom\templates\bom_read.html
+{% extends 'base.html' %}
+{% block title %}BOM{% endblock %}
+{% block header %}
+    <a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
+    <h2>BOM</h2>
+    <a href="{{ url_for('main.inventory.bom.bom_create.bom_create') }}">Create BOM</a>
+{% endblock %}
+{% block content %}
+    <table>
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Material ID</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bom in boms %}
+            <tr>
+                <td>{{ bom.item_id }}</td>
+                <td>{{ bom.material_id }}</td>
+                <td>{{ bom.quantity }}</td>
+                <td>
+                    <a href="{{ url_for('main.inventory.bom.bom_update.bom_update', id=bom.id) }}">Update</a>
+                    <a href="{{ url_for('main.inventory.bom.bom_delete.bom_delete', id=bom.id) }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+#BGM\BGM\app\main\inventory\bom\templates\bom_update.html
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Update BOM</h2>
+<form method="post">
+    <label for="item_id">Item ID</label>
+    <input type="text" name="item_id" id="item_id" value="{{ bom.item_id }}" >
+    <br>
+    <label for="material_id">Material ID</label>
+    <input type="text" name="material_id" id="material_id" value="{{ bom.material_id }}" >
+    <br>
+    <label for="quantity">Quantity</label>
+    <input type="text" name="quantity" id="quantity" value="{{ bom.quantity }}" >
+    <br>
+    <button type="submit">Update BOM</button>
+</form>
+<a href="{{ url_for('main.inventory.bom.bom_read_bp.bom_read') }}">Back to BOMs</a>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\godown\godown_create.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from .models import Godown
+from .rack.models import Rack
+
+godown_create_bp = Blueprint('godown_create', __name__, template_folder='templates')
+
+@godown_create_bp.route('/create', methods=['GET', 'POST'])
+def godown_create():
+    if request.method == 'POST':
+        name = request.form['name']
+        num_racks = int(request.form.get('num_racks', 0))
+
+        new_godown = Godown(name=name)
+        db.session.add(new_godown)
+        db.session.commit()
+
+        # Create racks if specified
+        for i in range(num_racks):
+            rack_name = f"{name} - {i+1:03}"
+            new_rack = Rack(name=rack_name, godown_id=new_godown.id)
+            db.session.add(new_rack)
+        
+        db.session.commit()
+        flash("Godown created successfully!", "success")
+        return redirect(url_for('main.inventory.godown.godown_read.godown_read'))
+    return render_template('godown_create.html')
+
+#BGM\BGM\app\main\inventory\godown\godown_delete.py
+from flask import Blueprint, redirect, url_for, flash
+from app import db
+from .models import Godown
+from app.main.inventory.godown.rack.models import Rack
+
+godown_delete_bp = Blueprint('godown_delete', __name__, template_folder='templates')
+
+@godown_delete_bp.route('/delete/<int:godown_id>', methods=['POST'])
+def godown_delete(godown_id):
+    godown = Godown.query.get_or_404(godown_id)
+    
+    racks = Rack.query.filter_by(godown_id=godown.id).all()
+    for rack in racks:
+        db.session.delete(rack)
+    
+    db.session.delete(godown)
+    db.session.commit()
+    flash("Godown and its associated racks deleted successfully!", "success")
+    return redirect(url_for('main.inventory.godown.godown_read.godown_read'))
+
+#BGM\BGM\app\main\inventory\godown\godown_read.py
+from flask import Blueprint, render_template, request, redirect, url_for
+from app import db
+from .models import Godown
+
+godown_read_bp = Blueprint('godown_read', __name__, template_folder='templates')
+
+@godown_read_bp.route('/read', methods=['GET'])
+def godown_read():
+    godowns = Godown.query.all()
+    return render_template('godown_read.html', godowns=godowns)
+
+#BGM\BGM\app\main\inventory\godown\godown_update.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from .models import Godown
+
+godown_update_bp = Blueprint('godown_update', __name__, template_folder='templates')
+
+@godown_update_bp.route('/update/<int:id>', methods=['GET', 'POST'])
+def godown_update(id):
+    godown = Godown.query.get_or_404(id)
+    if request.method == 'POST':
+        name = request.form.get('name')
+        if not name:
+            flash("Godown name is required!", "danger")
+            return redirect(url_for('main.inventory.godown.godown_update.godown_update', id=id))
+        godown.name = name
+        db.session.commit()
+        flash("Godown updated successfully!", "success")
+        return redirect(url_for('main.inventory.godown.godown_read.godown_read'))
+    return render_template('godown_update.html', godown=godown)
+
+#BGM\BGM\app\main\inventory\godown\models.py
+from app import db
+from app.models import BaseModel
+
+class Godown(BaseModel):
+    __tablename__ = "godowns"
+    name = db.Column(db.String(50), nullable=True)
+    racks = db.relationship('Rack', backref='godown_rack', lazy='subquery')
+
+#BGM\BGM\app\main\inventory\godown\__init__.py
+from flask import Blueprint
+
+godown_bp = Blueprint('godown', __name__)
+
+from .godown_create import godown_create_bp
+from .godown_read import godown_read_bp
+from .godown_update import godown_update_bp
+from .godown_delete import godown_delete_bp
+
+godown_bp.register_blueprint(godown_create_bp, url_prefix='/godown_create')
+godown_bp.register_blueprint(godown_read_bp, url_prefix='/godown_read')
+godown_bp.register_blueprint(godown_update_bp, url_prefix='/godown_update')
+godown_bp.register_blueprint(godown_delete_bp, url_prefix='/godown_delete')
+
+from .rack import rack_bp
+godown_bp.register_blueprint(rack_bp, url_prefix='/rack')
+#BGM\BGM\app\main\inventory\godown\rack\models.py
+from app import db
+from app.models import BaseModel
+
+class Rack(BaseModel):
+    __tablename__ = "racks"
+    name = db.Column(db.String(50), nullable=True)
+    godown_id = db.Column(db.Integer, db.ForeignKey('godowns.id'), nullable=True)
+    godown = db.relationship('Godown', backref=db.backref('rack_list', lazy='dynamic'))
+
+#BGM\BGM\app\main\inventory\godown\rack\rack_create.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from app.main.inventory.godown.rack.models import Rack
+from app.main.inventory.item.models import Item  # Import Item model
+from sqlalchemy.exc import IntegrityError
+
+rack_create_bp = Blueprint('rack_create', __name__, template_folder='templates')
+
+@rack_create_bp.route('/rack_create', methods=['GET', 'POST'])
+def rack_create():
+    from app.main.inventory.godown.models import Godown
+    godown_id = request.args.get('godown_id')
+    if request.method == 'POST':
+        num_racks = int(request.form.get('num_racks'))
+        godown_id = request.form.get('godown_id')
+        item_ids = request.form.getlist('item_ids')  # Get list of selected item IDs
+
+        existing_racks = Rack.query.filter_by(godown_id=godown_id).all()
+        if existing_racks:
+            max_rack_number = max(int(rack.name.split()[-1]) for rack in existing_racks if rack.name.split()[-1].isdigit())
+        else:
+            max_rack_number = 0
+
+        for i in range(num_racks):
+            new_rack_number = max_rack_number + i + 1
+            godown = Godown.query.get(godown_id)
+            new_rack_name = f"{godown.name} - {new_rack_number:03}"
+            new_rack = Rack(name=new_rack_name, godown_id=godown_id)
+
+            # Associate selected items with the rack
+            for item_id in item_ids:
+                item = Item.query.get(item_id)
+                if item:
+                    new_rack.items.append(item)
+
+            try:
+                db.session.add(new_rack)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                flash(f"Error: Rack {new_rack_name} already exists.", "danger")
+                continue
+
+        flash("Racks added successfully!", "success")
+        return redirect(url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown_id))
+
+    godown = Godown.query.get(godown_id)
+    # Fetch all items for the select field
+    items = Item.query.all()
+    return render_template('rack_create.html', godown=godown, items=items)
+
+#BGM\BGM\app\main\inventory\godown\rack\rack_delete.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from .models import Rack
+from app.main.inventory.godown.models import Godown
+
+rack_delete_bp = Blueprint('rack_delete', __name__, template_folder='templates')
+
+@rack_delete_bp.route('/rack_delete', methods=['GET', 'POST'])
+def rack_delete():
+    godown_id = request.args.get('godown_id')
+    godown = Godown.query.get(godown_id)
+
+    if request.method == 'POST':
+        num_racks_to_delete = int(request.form.get('num_racks_to_delete'))
+        if num_racks_to_delete <= 0:
+            flash("Number of racks to delete must be positive.", "danger")
+            return redirect(url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown_id))
+
+        racks_to_delete = Rack.query.filter_by(godown_id=godown_id).order_by(Rack.id.desc()).limit(num_racks_to_delete).all()
+
+        if not racks_to_delete:
+            flash('No racks found to delete.', 'danger')
+            return redirect(url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown_id))
+        
+        deleted_count = 0
+        for rack in racks_to_delete:
+            db.session.delete(rack)
+            deleted_count += 1
+        db.session.commit()
+
+        flash(f'{deleted_count} racks deleted successfully!', 'success')
+        return redirect(url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown_id))
+
+    return render_template('rack_delete.html', godown=godown)
+
+#BGM\BGM\app\main\inventory\godown\rack\rack_read.py
+from flask import Blueprint, render_template, request, abort
+from .models import Rack
+from app.main.inventory.godown.models import Godown
+
+rack_read_bp = Blueprint('rack_read', __name__, template_folder='templates', static_folder='static')
+
+@rack_read_bp.route('/read', methods=['GET'])
+def rack_read():
+    godown_id = request.args.get('godown_id', type=int)
+    if not godown_id:
+        abort(400, description="Godown ID is required.")
+        
+    godown = Godown.query.get_or_404(godown_id)
+    
+    racks = Rack.query.filter_by(
+        godown_id=godown_id
+    ).order_by(Rack.name).all()
+
+    return render_template('rack_read.html', racks=racks, godown=godown)
+
+#BGM\BGM\app\main\inventory\godown\rack\rack_update.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from app.main.inventory.godown.rack.models import Rack
+from app.main.inventory.item.models import Item  # Import Item model
+
+rack_update_bp = Blueprint('rack_update', __name__, template_folder='templates')
+
+@rack_update_bp.route('/rack_update/<int:id>', methods=['GET', 'POST'])
+def rack_update(id):
+    rack = Rack.query.get_or_404(id)
+    from app.main.inventory.godown.models import Godown
+    godown = Godown.query.get(rack.godown_id)
+
+    if request.method == 'POST':
+        rack.name = request.form.get('name')
+        item_ids = request.form.getlist('item_ids')  # Get list of selected item IDs
+
+        # Clear existing item associations
+        rack.items = []
+
+        # Associate selected items with the rack
+        for item_id in item_ids:
+            item = Item.query.get(item_id)
+            if item:
+                rack.items.append(item)
+
+        try:
+            db.session.commit()
+            flash("Rack updated successfully!", "success")
+            return redirect(url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=rack.godown_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating rack: {e}", "danger")
+
+    # Fetch all items for the select field
+    items = Item.query.all()
+    return render_template('rack_update.html', rack=rack, godown=godown, items=items)
+
+#BGM\BGM\app\main\inventory\godown\rack\__init__.py
+from flask import Blueprint
+
+rack_bp = Blueprint('rack', __name__)
+
+from .rack_create import rack_create_bp
+from .rack_read import rack_read_bp
+from .rack_delete import rack_delete_bp
+
+rack_bp.register_blueprint(rack_create_bp, url_prefix='/rack_create')
+rack_bp.register_blueprint(rack_read_bp, url_prefix='/rack_read')
+rack_bp.register_blueprint(rack_delete_bp, url_prefix='/rack_delete')
+
+#BGM\BGM\app\main\inventory\godown\rack\templates\rack_create.html
+{% extends 'base.html' %}
+{% block title %}Create Rack{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.id) }}">Back</a>
+<h2>Add racks to <i>{{ godown.name }}</i></h2>
+{% endblock %}
+{% block content %}
+<form method="post" action="{{ url_for('main.inventory.godown.rack.rack_create.rack_create') }}">
+    <label for='num_racks'>Number of racks:</label>
+    <input type="number" id="num_racks" name="num_racks" >
+    <input type="hidden" id="godown_id" name="godown_id" value="{{ godown.id }}" >
+    <br>
+    <button type="submit">Add Racks</button>
+</form>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\godown\rack\templates\rack_delete.html
+{% extends 'base.html' %}
+{% block title %}Delete Racks{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.id) }}">Back</a>
+<h2>Delete Racks from {{ godown.name }}</h2>
+{% endblock %}
+{% block content %}
+<form method="post" action="{{ url_for('main.inventory.godown.rack.rack_delete.rack_delete', godown_id=godown.id) }}">
+    <label for='num_racks_to_delete'>Number of racks to delete (from last)</label>
+    <input type="number" id="num_racks_to_delete" name="num_racks_to_delete" >
+    <input type="hidden" id="godown_id" name="godown_id" value="{{ godown.id }}" >
+    <br>
+    <input type="submit" value="Delete">
+</form>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\godown\rack\templates\rack_read.html
+{% extends 'base.html' %}
+{% block title %}Racks{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">&xlArr;</a>
+    <h2>Racks of <i>{{ godown.name }}</i></h2>
+    <a href="{{ url_for('main.inventory.godown.rack.rack_create.rack_create', godown_id=godown.id) }}">Add Racks</a>
+{% endblock %}
+{% block content %}
+{% if racks %}
+{% for rack in racks %}
+    <div class="card">{{ rack.name }}</div>
+{% endfor %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_delete.rack_delete', godown_id=godown.id) }}">Delete Racks</a>
+{% else %}
+    <p>No racks available in this godown.</p>
+{% endif %}
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\godown\rack\templates\rack_update.html
+{% extends 'base.html' %}
+{% block title %}Update Rack{% endblock %}
+{% block content %}
+<a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.godown_id) }}">Back</a>
+<br>
+<h2>Update Rack: {{ rack.name }}</h2>
+<form method="post" action="{{ url_for('main.inventory.godown.rack.rack_update.rack_update', id=rack.id) }}">
+    <br><label for="name">Rack Name:</label>
+    <br><input type="text" id="name" name="name" value="{{ rack.name }}" >
+
+    <br><label for="item_ids">Select Items:</label>
+    <br><select id="item_ids" name="item_ids" multiple>
+        {% for item in items %}
+        <option value="{{ item.id }}" {% if item in rack.items %}selected{% endif %}>{{ item.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="submit" value="Update">
+</form>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\godown\templates\godown_create.html
+{% extends 'base.html' %}
+{% block title %}Create Godown{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">&xlArr;</a>
+<h2>Create Godown</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST" action="{{ url_for('main.inventory.godown.godown_create.godown_create') }}">
+        <label for="name">Godown name</label>
+        <input type="text" id="name" name="name"  autocomplete="off">
+        <br>
+        <label for='num_racks'>Number of racks</label>
+        <input type="number" id="num_racks" name="num_racks" value="1" >
+        <br>
+        <button type="submit">Create Godown</button>
+    </form>
+{% endblock %}
+#BGM\BGM\app\main\inventory\godown\templates\godown_read.html
+{% extends 'base.html' %}
+{% block title %}Godowns{% endblock %}
+{% block header %}
+    <a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
+    <h2>Godowns</h2>
+    <a href="{{ url_for('main.inventory.godown.godown_create.godown_create') }}">Create Godown</a>
+{% endblock %}
+{% block content %}
+    {% for godown in godowns %}
+        <div class="card">
+            <h2>{{ godown.name }}</h2>
+            <details>
+                <summary>Details</summary>
+                <a href="{{ url_for('main.inventory.godown.rack.rack_read.rack_read', godown_id=godown.id) }}" class="btn btn-info">View Racks</a>
+                <details>
+                    <summary>Actions</summary>
+                    <a href="{{ url_for('main.inventory.godown.godown_update.godown_update', id=godown.id) }}" class="btn btn-warning">Edit</a>
+                    <form action="{{ url_for('main.inventory.godown.godown_delete.godown_delete', godown_id=godown.id) }}" method="POST" style="border: none;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this godown?')">Delete</button>
+                    </form>
+                </details>
+            </details>
+        </div>
+    {% else %}
+        <p>No godowns found.</p>
+    {% endfor %}
+{% endblock %}
+#BGM\BGM\app\main\inventory\godown\templates\godown_update.html
+{% extends 'base.html' %}
+{% block title %}Update Godown{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">&xlArr;</a>
+<h2>Update Godown</h2>
+{% endblock %}
+{% block content %}
+<form method="POST" action="{{ url_for('main.inventory.godown.godown_update.godown_update', id=godown.id) }}">
+    <label>Name</label>
+    <input type="text" name="name" value="{{ godown.name }}"  autocomplete="off">
+    <br>
+    <button type="submit">Update Godown</button>
+</form>
+{% endblock %}
+#BGM\BGM\app\main\inventory\item\item_create.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from app.main.inventory.item.models import Item
+
+item_create_bp = Blueprint('item_create', __name__, template_folder='templates', static_folder='static')
+
+@item_create_bp.route('/create', methods=['GET', 'POST'])
+def item_create():
+    if request.method == 'POST':
+        # Helper function to convert empty strings to None
+        def clean_numeric(value):
+            return None if value == '' else value
+
+        name = request.form.get('name')
+        width_m = clean_numeric(request.form.get('width_m'))
+        width_G = clean_numeric(request.form.get('width_G'))
+        length_in = clean_numeric(request.form.get('length_in'))
+        breadth_soot = clean_numeric(request.form.get('breadth_soot'))
+        weight_gm = clean_numeric(request.form.get('weight_gm'))
+        weight_kg = clean_numeric(request.form.get('weight_kg'))
+
+        new_item = Item(
+            name=name, 
+            width_m=width_m,
+            width_G=width_G, 
+            length_in=length_in, 
+            breadth_soot=breadth_soot,
+            weight_gm=weight_gm, 
+            weight_kg=weight_kg
+        )
+        
+        new_item.generate_full_name()
+        db.session.add(new_item)
+        db.session.commit()
+        flash("Item created successfully!", "success")
+        return redirect(url_for('main.inventory.item.item_read.item_read'))
+    return render_template('item_create.html')
+#BGM\BGM\app\main\inventory\item\item_delete.py
+from flask import Blueprint, redirect, url_for, flash
+from app.main.inventory.item.models import Item
+from app import db
+
+item_delete_bp = Blueprint('item_delete', __name__)
+
+@item_delete_bp.route('/delete/<int:id>', methods=['POST'])
+def item_delete(id):
+    item = Item.query.get_or_404(id)
+    full_name = item.full_name
+    db.session.delete(item)
+    db.session.commit()
+    flash(f'"{full_name}" - Removed from items', 'success')
+    return redirect(url_for('main.inventory.item.item_read.item_read'))
+
+#BGM\BGM\app\main\inventory\item\item_read.py
+from flask import Blueprint, render_template
+from app.main.inventory.item.models import Item
+from app import db
+
+item_read_bp = Blueprint('item_read', __name__, template_folder='templates')
+
+@item_read_bp.route('/read', methods=['GET'])
+def item_read():
+    items = Item.query.order_by(Item.name).all()  # Sort items alphabetically by name
+    return render_template('item_read.html', items=items)
+
+#BGM\BGM\app\main\inventory\item\item_update.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app.main.inventory.item.models import Item
+from app import db
+from decimal import Decimal
+
+item_update_bp = Blueprint('item_update', __name__, template_folder='templates')
+
+@item_update_bp.route('/update/<int:id>', methods=['GET', 'POST'])
+def item_update(id):
+    item = Item.query.get_or_404(id)
+    if request.method == 'POST':
+        item.name = request.form['name']
+        item.width_m = request.form['width_m']
+        item.width_G = request.form['width_G']
+        item.length_in = request.form['length_in']
+        item.breadth_soot = request.form['breadth_soot']
+        item.weight_gm = request.form['weight_gm']
+        item.weight_kg = request.form['weight_kg']
+
+        item.generate_full_name()  # Regenerate the full_name after updating values
+        
+        db.session.commit()
+        flash('Item updated successfully!', 'success')
+        return redirect(url_for('main.inventory.item.item_read.item_read'))
+
+    return render_template('item_update.html', item=item)
+
+#BGM\BGM\app\main\inventory\item\models.py
+from app import db
+from app.models import BaseModel
+from sqlalchemy.types import Numeric
+
+class Item(BaseModel):
+    __tablename__ = "items"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=True)
+    full_name = db.Column(db.String(200), nullable=True)
+    width_m = db.Column(Numeric(10, 2), nullable=True)
+    width_G = db.Column(Numeric(10, 2), nullable=True)
+    length_in = db.Column(Numeric(10, 2), nullable=True)
+    breadth_soot = db.Column(Numeric(10, 2), nullable=True)
+    weight_gm = db.Column(Numeric(10, 2), nullable=True)
+    weight_kg = db.Column(db.Numeric(10, 2), nullable=True)
+    
+    def generate_full_name(self):
+        """Generates and updates the full_name field including only non-zero measurements"""
+        measurements = {
+            'width_m': 'm',
+            'width_G': 'G',
+            'length_in': 'in',
+            'breadth_soot': 'soot'
+        }
+        
+        def safe_float(value):
+            """Convert value to float safely, return 0 if value is None or empty string"""
+            if value is None or value == '':
+                return 0
+            return float(value)
+        
+        parts = [f"{getattr(self, attr)}{unit}" 
+                for attr, unit in measurements.items() 
+                if safe_float(getattr(self, attr)) > 0]
+        
+        self.full_name = f"{self.name} {' '.join(parts)}" if parts else self.name
+#BGM\BGM\app\main\inventory\item\__init__.py
+from flask import Blueprint
+
+item_bp = Blueprint('item', __name__)
+
+from .item_create import item_create_bp
+from .item_read import item_read_bp
+from .item_update import item_update_bp
+from .item_delete import item_delete_bp
+
+item_bp.register_blueprint(item_create_bp, url_prefix='/item_create')
+item_bp.register_blueprint(item_read_bp, url_prefix='/item_read')
+item_bp.register_blueprint(item_update_bp, url_prefix='/item_update')
+item_bp.register_blueprint(item_delete_bp, url_prefix='/item_delete')
+#BGM\BGM\app\main\inventory\item\templates\item_create.html
+{% extends 'base.html' %}
+{% block title %}Add Item{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.item.item_read.item_read') }}">&xlArr;</a><br>
+<h2>Add Item</h2>
+{% endblock %}
+{% block content %}
+<form method="POST" action="{{ url_for('main.inventory.item.item_create.item_create') }}">
+    <label for="name" width="100%">Name:</label>
+    <input type="text" id="name" name="name"  autocomplete="off">
+    <br>
+    <label for="width_m">Width (m):</label>
+    <input type="number" id="width_m" name="width_m" step="0.01" >
+    <br>
+    <label for="width_G">Width (G):</label>
+    <input type="number" id="width_G" name="width_G" step="0.01" >
+    <br>
+    <label for="length_in">Length (in):</label>
+    <input type="number" id="length_in" name="length_in" step="0.01" >
+    <br>
+    <label for="breadth_soot">Breadth (soot):</label>
+    <input type="number" id="breadth_soot" name="breadth_soot" step="0.01" >
+    <br>
+    <label for="weight_gm">Weight (gm):</label>
+    <input type="number" id="weight_gm" name="weight_gm" step="0.01" >
+    <br>
+    <label for="weight_kg">Weight (kg):</label>
+    <input type="number" id="weight_kg" name="weight_kg" step="0.01" >
+    <br>
+    <input type="submit" value="Add Item">
+</form>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\item\templates\item_read.html
+{% extends 'base.html' %}
+{% block title %}Items{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
+<h2>Items</h2>
+<a href="{{ url_for('main.inventory.item.item_create.item_create') }}">Create item</a>
+{% endblock %}
+{% block content %}
+    {% for item in items %}
+        <div class="card">
+            <h2>{{ item.full_name }}</h2>
+            <details>
+                <summary>Details</summary>
+                {% if item.width_m != 0 %}
+                <p>Width (m) - {{ item.width_m }}</p>
+                {% endif %}
+                {% if item.width_G != 0 %}
+                <p>Width (G) - {{ item.width_G }}</p>
+                {% endif %}
+                {% if item.length_in != 0 %}
+                <p>Length (in) - {{ item.length_in }}</p>
+                {% endif %}
+                {% if item.breadth_soot != 0 %}
+                <p>Breadth (soot) - {{ item.breadth_soot }}</p>
+                {% endif %}
+                {% if item.weight_gm != 0 %}
+                <p>Weight (gm) - {{ item.weight_gm }}</p>
+                {% endif %}
+                {% if item.weight_kg != 0 %}
+                <p>Weight (kg) - {{ item.weight_kg }}</p>
+                {% endif %}
+                <details>
+                    <summary>Actions</summary>
+                    <a href="{{ url_for('main.inventory.item.item_update.item_update', id=item.id) }}">Edit</a>
+                    <form method="POST" action="{{ url_for('main.inventory.item.item_delete.item_delete', id=item.id) }}" style="border:none;">
+                        <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
+                    </form>
+                </details>
+            </details>
+        </div>
+    {% else %}
+    <p>No items found.</p>
+    {% endfor %}
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\item\templates\item_update.html
+{% extends 'base.html' %}
+{% block title %}Update Item{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.item.item_read.item_read') }}">&xlArr;</a><br>
+<h2>Update Item</h2>
+{% endblock %}
+{% block content %}
+<form method="POST" action="{{ url_for('main.inventory.item.item_update.item_update', id=item.id) }}">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{ item.name }}" >
+    <br>
+    <label for="width_m">Width (m):</label>
+    <input type="number" id="width_m" name="width_m" value="{{ item.width_m }}" >
+    <br>
+    <label for="width_G">Width (G):</label>
+    <input type="number" id="width_G" name="width_G" value="{{ item.width_G }}" >
+    <br>
+    <label for="length_in">Length (in):</label>
+    <input type="number" id="length_in" name="length_in" value="{{ item.length_in }}" >
+    <br>
+    <label for="breadth_soot">Breadth (soot):</label>
+    <input type="number" id="breadth_soot" name="breadth_soot" value="{{ item.breadth_soot }}" >
+    <br>
+    <label for="weight_gm">Weight (gm):</label>
+    <input type="number" id="weight_gm" name="weight_gm" value="{{ item.weight_gm }}" >
+    <br>
+    <label for="weight_kg">Weight (kg):</label>
+    <input type="number" id="weight_kg" name="weight_kg" value="{{ item.weight_kg }}" >
+    <input type="submit" value="Save Changes">
+</form>
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\templates\inventory_create.html
+{% extends 'base.html' %}
+{% block title %}Create Inventory{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
+<h2>Create Inventory</h2>
+{% endblock %}
+{% block content %}
+    <form method="POST">
+        <label for="item_id">Item</label>
+        <select id="item_id" name="item_id" >
+            <option value="">Select Item</option>
+            {% for item in items %}
+                <option value="{{ item.id }}">
+                    {{ item.full_name }}
+                </option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="godown_id">Select Godown</label>
+        <select id="godown_id" name="godown_id"  onchange="updateRacks(this.value)">
+            <option value="">Select Godown</option>
+            {% for godown in godowns %}
+                <option value="{{ godown.id }}">{{ godown.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="rack_id">Select Rack</label>
+        <select id="rack_id" name="rack_id" >
+            <option value="">Select Rack</option>
+            {% for rack in racks %}
+                <option value="{{ rack.id }}" data-godown="{{ rack.godown_id }}">{{ rack.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="avl_qnty">Available Quantity</label>
+        <input type="number" id="avl_qnty" name="avl_qnty" >
+        <br>
+        <label for="min_qnty">Minimum Quantity</label>
+        <input type="number" id="min_qnty" name="min_qnty" >
+        <br>
+        <label for="rod_qnty">Rod Quantity</label>
+        <input type="number" id="rod_qnty" name="rod_qnty" >
+        <br>
+        <input type="submit" value="Create Inventory">
+    </form>
+{% endblock %}
+#BGM\BGM\app\main\inventory\templates\inventory_read.html
+{% extends 'base.html' %}
+{% block title %}Inventory{% endblock %}
+{% block header %}
+    <a href="{{ url_for('main.main') }}">&xlArr;</a>
+    <h2>Inventory</h2>
+    <a href="{{ url_for('main.inventory.inventory_create.inventory_create') }}">Add Inventory</a>
+    <details>
+        <summary>More</summary>
+            <p>
+                <a href="{{ url_for('main.inventory.bom.bom_read.bom_read') }}">Bill of Materials</a>
+                <a href="{{ url_for('main.inventory.godown.godown_read.godown_read') }}">Godowns</a>
+                <a href="{{ url_for('main.inventory.item.item_read.item_read') }}">Items</a>
+            </p>
+        </details>
+{% endblock %}
+{% block content %}
+{% for inventory in inventories %}
+<div class="card">
+    <p><b>{{ inventory.item.full_name }}</b></p>
+    <p>Location - {{ inventory.rack.name }}</p>
+    <p>Available Quantity - {{ (inventory.avl_qnty) }}</p>
+    <details>
+        <summary>Details</summary>
+        <p>Minimum Quantity - {{ inventory.min_qnty }}</p>
+        <p>Reorder Quantity - {{ inventory.rod_qnty }}</p>
+        <details>
+            <summary>Actions</summary>
+            <a href="{{ url_for('main.inventory.inventory_update.inventory_update', id=inventory.id) }}">Edit</a>
+            <form action="{{ url_for('main.inventory.inventory_delete.inventory_delete', id=inventory.id) }}"
+                method="POST" style="display: inline;">
+                <button type="submit"
+                        onclick="return confirm('Are you sure you want to delete this inventory record?')">
+                    Delete
+                </button>
+            </form>
+        </details>
+    </details>
+</div>
+{% else %}
+<p>No inventory records found</p>
+{% endfor %}
+{% endblock %}
+
+#BGM\BGM\app\main\inventory\templates\inventory_update.html
+{% extends 'base.html' %}
+{% block title %}Update Inventory{% endblock %}
+{% block header %}
+<a href="{{ url_for('main.inventory.inventory_read.inventory_read') }}">&xlArr;</a>
+<h2>Update Inventory</h2>
+{% endblock %}
+{% block content %}
+<form method="POST">
+    <label for="item_id">Item</label>
+    <select id="item_id" name="item_id" >
+        <option value="">Select Item</option>
+        {% for item in items %}
+        <option value="{{ item.id }}" {% if item.id == inventory.item_id %}selected{% endif %}>
+            {{ item.full_name }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <label for="godown">Godown</label>
+    <select id="godown" name="godown_id" onchange="updateRacks(this.value)" >
+        <option value="">Select Godown</option>
+        {% for godown in godowns %}
+        <option value="{{ godown.id }}" {% if godown.id == inventory.godown_id %}selected{% endif %}>
+            {{ godown.name }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <label for="rack_id">Rack</label>
+    <select id="rack_id" name="rack_id" >
+        <option value="">Select Rack</option>
+    {% for rack in racks %}
+    <option value="{{ rack.id }}" 
+        {% if rack.id == inventory.godown_id.rack_id %}selected{% endif %}>
+        {{ rack.name }}
+    </option>
+    {% endfor %}
+    </select>
+
+    <label for="avl_qnty">Available Quantity</label>
+    <input type="number" id="avl_qnty" name="avl_qnty"  min="0" value="{{ inventory.avl_qnty }}">
+
+    <label for="min_qnty">Minimum Quantity</label>
+    <input type="number" id="min_qnty" name="min_qnty"  min="0" value="{{ inventory.min_qnty }}">
+
+    <label for="rod_qnty">Rod Quantity</label>
+    <input type="number" id="rod_qnty" name="rod_qnty"  min="0" value="{{ inventory.rod_qnty }}">
+
+    <button type="submit">Update Inventory</button>
+</form>
+
+<script>
+function updateRacks(godownId) {
+    const rackSelect = document.getElementById('rack_id');
+    const rackOptions = rackSelect.getElementsByTagName('option');
+    
+    rackSelect.value = '';
+    
+    for (let option of rackOptions) {
+        if (option.value === '') {
+            option.hidden = false;
+            continue;
+        }
+        
+        if (option.getAttribute('data-godown') === godownId) {
+            option.hidden = false;
+        } else {
+            option.hidden = true;
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const godownSelect = document.getElementById('godown');
+    if (godownSelect.value) {
+        updateRacks(godownSelect.value);
+    }
+});
+</script>
+{% endblock %}

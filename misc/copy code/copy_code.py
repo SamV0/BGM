@@ -1,8 +1,8 @@
 import os
 
 # Define source directory and output file
-SOURCE_DIR = r"C:\Users\samar\Documents\BGM"
-OUTPUT_FILE = r"C:\Users\samar\Documents\BGM\misc\copy code\copies\all_code_combined.txt"
+SOURCE_DIR = r"C:\Users\s\Documents\BGM\BGM\app\main\inventory"
+OUTPUT_FILE = r"C:\Users\s\Documents\BGM\BGM\misc\copy code\code.txt"
 
 # Excluded directories
 EXCLUDED_DIRS = {"misc", "venv", "__pycache__", "instance"}
